@@ -12,10 +12,8 @@ from settings import Settings
 class Context(BaseContext):
     db: Database
 
-    def __init__(
-        self,
-        db: Database,
-    ) -> None:
+    def __init__(self, db: Database) -> None:
+        super().__init__()
         self.db = db
 
 
