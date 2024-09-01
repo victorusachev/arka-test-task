@@ -2,13 +2,12 @@ from contextlib import asynccontextmanager
 from functools import partial
 from typing import AsyncGenerator
 
-import strawberry
 from databases import Database
 from fastapi import FastAPI
-from strawberry.types import Info
 from strawberry.fastapi import BaseContext, GraphQLRouter
 
-from settings import Settings
+from backend.schema import schema
+from backend.settings import Settings
 
 
 class Context(BaseContext):
@@ -17,37 +16,6 @@ class Context(BaseContext):
     def __init__(self, db: 'Database') -> None:
         super().__init__()
         self.db = db
-
-
-@strawberry.type
-class Author:
-    name: str
-
-
-@strawberry.type
-class Book:
-    title: str
-    author: Author
-
-
-@strawberry.type
-class Query:
-
-    @strawberry.field
-    async def books(
-        self,
-        info: Info[Context, None],
-        author_ids: list[int] | None = [],
-        search: str | None = None,
-        limit: int | None = None,
-    ) -> list[Book]:
-        # TODO:
-        # Do NOT use dataloaders
-        await info.context.db.execute("select 1")
-        return []
-
-
-schema = strawberry.Schema(query=Query)
 
 
 @asynccontextmanager
