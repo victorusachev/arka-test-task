@@ -18,5 +18,3 @@ insert into books (title, author_id) values
     ('The Man in the Brown Suit', 2), ('The Mysterious Affair at Styles', 2),
     ('The Adventures of Tom Sawyer', 3), ('The Adventures of Huckleberry Finn', 3)
 ;
-
-drop table authors;
