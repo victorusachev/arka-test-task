@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "backend-test"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "Test task of ARKA.dev project"
+authors = ["Victor Usachev <usachev-1991@yandex.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
