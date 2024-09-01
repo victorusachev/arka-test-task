@@ -1,0 +1,29 @@
+# System files
+*~
+.*
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logging
+logs/
+*.log
+
+# Environments
+.env
+env/
+venv/
+
+# Other
+dist/
+
+# Don't ignore
+## VCS
+!.gitattributes
+!.gitignore
+!.gitkeep
+
+## examples
+!.env.example
