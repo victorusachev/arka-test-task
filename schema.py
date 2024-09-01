@@ -1,21 +1,25 @@
 from contextlib import asynccontextmanager
 from functools import partial
+from typing import AsyncGenerator
+
 import strawberry
-from strawberry.types import Info
-from fastapi import FastAPI
-from strawberry.fastapi import BaseContext, GraphQLRouter
 from databases import Database
+from fastapi import FastAPI
+from strawberry.types import Info
+from strawberry.fastapi import BaseContext, GraphQLRouter
 
 from settings import Settings
 
 
-class Context(BaseContext):
-    db: Database
+CONN_TEMPLATE = "postgresql+asyncpg://{user}:{password}@{host}:{port}/{name}"
 
-    def __init__(self, db: Database) -> None:
+
+class Context(BaseContext):
+    db: 'Database'
+
+    def __init__(self, db: 'Database') -> None:
         super().__init__()
         self.db = db
-
 
 
 @strawberry.type
@@ -46,33 +50,33 @@ class Query:
         return []
 
 
+schema = strawberry.Schema(query=Query)
 
-CONN_TEMPLATE = "postgresql+asyncpg://{user}:{password}@{host}:{port}/{name}"
-settings = Settings()  # type: ignore
-db = Database(
-    CONN_TEMPLATE.format(
+
+@asynccontextmanager
+async def lifespan(app: FastAPI, db: Database) -> AsyncGenerator:
+    async with db:
+        yield
+    await db.disconnect()
+
+
+def create_app() -> FastAPI:
+    settings = Settings()  # type: ignore[call-arg]
+    db_url = CONN_TEMPLATE.format(
         user=settings.DB_USER,
         password=settings.DB_PASSWORD,
         port=settings.DB_PORT,
         host=settings.DB_SERVER,
         name=settings.DB_NAME,
-    ),
-)
+    )
+    db = Database(db_url)
 
-@asynccontextmanager
-async def lifespan(
-    app: FastAPI,
-    db: Database,
-):
-    async with db:
-        yield
-    await db.disconnect()
+    app = FastAPI(lifespan=partial(lifespan, db=db))
 
-schema = strawberry.Schema(query=Query)
-graphql_app = GraphQLRouter(  # type: ignore
-    schema,
-    context_getter=partial(Context, db),
-)
+    graphql_app = GraphQLRouter(
+        schema,
+        context_getter=partial(Context, db),  # type: ignore[var-annotated]
+    )
 
-app = FastAPI(lifespan=partial(lifespan, db=db))
-app.include_router(graphql_app, prefix="/graphql")
+    app.include_router(graphql_app, prefix="/graphql")
+    return app
