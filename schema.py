@@ -11,9 +11,6 @@ from strawberry.fastapi import BaseContext, GraphQLRouter
 from settings import Settings
 
 
-CONN_TEMPLATE = "postgresql+asyncpg://{user}:{password}@{host}:{port}/{name}"
-
-
 class Context(BaseContext):
     db: 'Database'
 
@@ -60,15 +57,20 @@ async def lifespan(app: FastAPI, db: Database) -> AsyncGenerator:
     await db.disconnect()
 
 
-def create_app() -> FastAPI:
-    settings = Settings()  # type: ignore[call-arg]
-    db_url = CONN_TEMPLATE.format(
+def make_db_url(settings: Settings) -> str:
+    url_template = "postgresql+asyncpg://{user}:{password}@{host}:{port}/{name}"
+    return url_template.format(
         user=settings.DB_USER,
         password=settings.DB_PASSWORD,
         port=settings.DB_PORT,
         host=settings.DB_SERVER,
         name=settings.DB_NAME,
     )
+
+
+def create_app() -> FastAPI:
+    settings = Settings()  # type: ignore[call-arg]
+    db_url = make_db_url(settings)
     db = Database(db_url)
 
     app = FastAPI(lifespan=partial(lifespan, db=db))
