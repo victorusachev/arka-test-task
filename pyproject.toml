@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "backend-test"
-version = "0.1.0"
+version = "0.2.0"
 description = "Test task of ARKA.dev project"
 authors = ["Victor Usachev <usachev-1991@yandex.ru>"]
 readme = "README.md"
